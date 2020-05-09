@@ -3,10 +3,8 @@ use borsh::{BorshDeserialize, BorshSerialize};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use chrono::prelude::*;
-use std::error::Error;
-use std::fmt;
 
-// -------- GEOCACHE CONTRACT -------- //
+// -------- GEOCACHE -------- //
 
 #[derive(PartialEq, PartialOrd, Eq, Hash, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 pub struct LogEntry {
@@ -33,9 +31,11 @@ impl Geocache {
             message: message,
         });
     }
+
+    // trade
 }
 
-// -------- GEOCOIN CONTRACT -------- //
+// -------- GEOCOIN  -------- //
 
 #[derive(PartialEq, PartialOrd, Eq, Hash, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 pub struct GeoCoin {
@@ -46,62 +46,156 @@ pub struct GeoCoin {
 
 #[near_bindgen]
 #[derive(Default, BorshDeserialize, BorshSerialize)]
-pub struct GeoCoinMint {
+pub struct GeoCoinContract {
     counter: u64,
     coins: HashMap<u64, GeoCoin>,
-    coins_by_owner: HashMap<String, Vec<GeoCoin>>
+    coins_by_owner: HashMap<String, Vec<u64>>,
+    allowances: HashMap<String, Vec<u64>>,
 }
 
 #[near_bindgen]
-impl GeoCoinMint {
+impl GeoCoinContract {
     pub fn mint_new(&mut self, bio: String) -> Option<u64> {
         if bio.chars().count() > 140 {
             return None
         }
-        self.coins.insert(self.counter, GeoCoin {
+        let id = self.counter;
+        self.coins.insert(id, GeoCoin {
             holder: env::signer_account_id(),
             bio: bio.clone(),
             creator: env::signer_account_id(),
         });
-        self.counter += 1;
         match self.coins_by_owner.get_mut(&env::signer_account_id()) {
             Some(coins) => {
-                coins.push(GeoCoin {
-                    holder: env::signer_account_id(),
-                    bio: bio.clone(),
-                    creator: env::signer_account_id(),
-                });
+                coins.push(id);
             }
             None => {
-                let coin = GeoCoin {
-                    holder: env::signer_account_id(),
-                    bio: bio.clone(),
-                    creator: env::signer_account_id(),
-                };
-                let coins = vec![coin];
+                let coins = vec![id];
                 self.coins_by_owner.insert(env::signer_account_id(), coins);
             }
         };
-        Some(10)
+        self.counter += 1;
+        Some(id)
     }   
 
-    pub fn mint_copy(&mut self, coinId: u64) -> Option<u64> {
-        let template = match self.coins.get(&coinId) {
-            Some(coin) => coin,
+    pub fn mint_copy(&mut self, coin_id: u64) -> Option<u64> {
+        let bio = match self.coins.get(&coin_id) {
+            Some(coin) => coin.bio.clone(),
             None => return None
         };
-        None
+        let id = self.counter;
+        self.coins.insert(id, GeoCoin {
+            holder: env::signer_account_id(),
+            bio: bio,
+            creator: env::signer_account_id(),
+        });
+        match self.coins_by_owner.get_mut(&env::signer_account_id()) {
+            Some(coins) => {
+                coins.push(id);
+            }
+            None => {
+                let coins = vec![id];
+                self.coins_by_owner.insert(env::signer_account_id(), coins);
+            }
+        };
+        self.counter += 1;
+        Some(id)
+    }
+    
+    pub fn approve(&mut self, spender: String, coin_id: u64) -> bool {
+        // make sure coin exists
+        match self.coins.get(&coin_id) {
+            Some(_) => {},
+            None => return false
+        };
+        match self.allowances.get_mut(&spender) {
+            Some(coins) => coins.push(coin_id),
+            None => {
+                let coins = vec![coin_id];
+                self.allowances.insert(spender, coins);
+            }
+        };
+        true
     }
 
-    pub fn transfer(&mut self, to: String, coinId: String) -> Option<u64> {
-        None
+    fn do_transfer(&mut self, to: String, from: String, coin_id: u64) -> bool {
+        // update coin holder
+        let coin = match self.coins.get_mut(&coin_id) {
+            Some(coin) => {
+                coin.holder = to.clone();
+                coin
+            },
+            None => return false
+        };
+        // remove from from's coins
+        match self.coins_by_owner.get_mut(&from) {
+            Some(coins) => {
+                let i = match coins.binary_search(&coin_id) {
+                    Ok(i) => i,
+                    Err(_) => return false
+                };
+                coins.remove(i);
+            }
+            None => {
+                // undo changing of coin & return early
+                coin.holder = from;
+                return false
+            }
+        };
+        // add to to's coins
+        match self.coins_by_owner.get_mut(&to) {
+            Some(coins) => {
+                match coins.binary_search(&coin_id) {
+                    Ok(_) => return true, // already holds the coin
+                    Err(_) => {} // doesn't hold the coin yet
+                };
+                coins.push(coin_id);
+            },
+            None => {
+                let coins = vec![coin_id];
+                self.coins_by_owner.insert(to, coins);
+            }
+        };
+        return true
     }
 
+    pub fn transfer_from(&mut self, to: String, from: String, coin_id: u64) -> bool {
+        // check to make sure allowance exists
+        match self.allowances.get_mut(&env::signer_account_id()) {
+            Some(coins) => match coins.binary_search(&coin_id) {
+                Ok(i) => {
+                    coins.remove(i);
+                }
+                Err(_) => return false
+            },
+            None => return false
+        };
+        let res = self.do_transfer(to, from, coin_id);
+        if !res {
+            // panic if we can't repair the state
+            let coins = self.allowances.get_mut(&env::signer_account_id()).unwrap();
+            coins.push(coin_id);
+            return false
+        }
+        true
+    }
+
+    pub fn transfer(&mut self, to: String, coin_id: u64) -> Option<u64> {
+        // make sure coin exists and is owned by signer_account_id
+        match self.coins.get_mut(&coin_id) {
+            Some(coin) => match coin.holder == env::signer_account_id() {
+                true => {},
+                false => return None,
+            },
+            None => return None,
+        };
+        match self.do_transfer(to, env::signer_account_id(), coin_id) {
+            true => Some(coin_id),
+            false => None
+        }
+    }
 
 }
-
-
-// -------- GEOCACHER CONTRACT -------- //
 
 
 
