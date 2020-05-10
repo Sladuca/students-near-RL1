@@ -1,8 +1,8 @@
 [package]
-name = "geodes-contract"
+name = "geodes"
 version = "0.1.0"
 authors = ["Sebastien La Duca <sladuca777@gmail.com>"]
-edition = "2020"
+edition = "2018"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
