@@ -38,6 +38,32 @@ pub struct GeodesContract {
 #[near_bindgen]
 impl GeodesContract {
 
+    pub fn create_cache(&mut self, name: String) -> Option<String> {
+        // cache_id = name.signer_account_id
+        let mut cache_id = name.clone().to_owned();
+        // replace spaces with dashes
+        cache_id = str::replace(&cache_id, " ", "-");
+        // remove apostrophes
+        cache_id = str::replace(&cache_id, "'", "");
+        let cache_name = cache_id.clone();
+        // name can't be empty
+        if cache_name.len() < 1 {
+            return None
+        }
+        cache_id.push('.');
+        cache_id.push_str(&env::signer_account_id());
+        // make sure it doesn't already exist
+        if self.caches.contains_key(&cache_id) {
+            return None
+        };
+        self.caches.insert(cache_id.clone(), Geocache {
+            log: vec![],
+            owner: env::signer_account_id().clone(),
+            name: cache_name,
+        });
+        Some(cache_id.clone())
+    }
+
     pub fn sign_cache(&mut self, cache_id: String, message: String) -> bool {
         let log_entry = LogEntry {
             geocacher: env::signer_account_id(),
@@ -54,15 +80,6 @@ impl GeodesContract {
     }
 
     pub fn add_geode_to_cache(&mut self, cache_id: String, geode_id: u64) -> bool {
-        // remove from owner's list
-        match self.geodes_by_owner.get_mut(&env::signer_account_id()) {
-            Some(geodes) => match geodes.binary_search(&geode_id) {
-                Ok(i) => geodes.remove(i),
-                Err(_) => return false,
-            }
-            None => return false
-        };
-        // do transfew
         self.do_transfer(cache_id, env::signer_account_id(), geode_id)
     }
 
@@ -166,11 +183,11 @@ impl GeodesContract {
         // add to to's geodes
         match self.geodes_by_owner.get_mut(&to) {
             Some(geodes) => {
-                match geodes.binary_search(&geode_id) {
+                let i = match geodes.binary_search(&geode_id) {
                     Ok(_) => return true, // already holds the geode
-                    Err(_) => {} // doesn't hold the geode yet
+                    Err(i) => i // doesn't hold the geode yet
                 };
-                geodes.push(geode_id);
+                geodes.insert(i, geode_id);
             },
             None => {
                 let geodes = vec![geode_id];
@@ -233,6 +250,27 @@ mod tests {
             signer_account_id: "bob".to_string(),
             signer_account_pk: vec![0, 1, 2],
             predecessor_account_id: "carol".to_string(),
+            input,
+            epoch_height: 0,
+            block_index: 0,
+            block_timestamp: 0,
+            account_balance: 0,
+            account_locked_balance: 0,
+            storage_usage: 0,
+            attached_deposit: 0,
+            prepaid_gas: 10u64.pow(18),
+            random_seed: vec![0, 1, 2],
+            is_view,
+            output_data_receivers: vec![],
+        }
+    }
+
+    fn get_context_carol(input: Vec<u8>, is_view: bool) -> VMContext {
+        VMContext {
+            current_account_id: "alice".to_string(),
+            signer_account_id: "carol".to_string(),
+            signer_account_pk: vec![0, 1, 2],
+            predecessor_account_id: "bob".to_string(),
             input,
             epoch_height: 0,
             block_index: 0,
@@ -339,17 +377,19 @@ mod tests {
     }
 
     #[test]
-    fn transfer_from() {
+    fn transfer_from_smoke() {
         let context = get_context(vec![], false);
         let bob = context.signer_account_id.clone();
         let carol = context.predecessor_account_id.clone();
         testing_env!(context);
         let mut contract = GeodesContract::default();
         // bob makes a geode
-        let id = contract.mint_new("approve smoke".to_string()).unwrap();
+        let id = contract.mint_new("transfer_from smoke".to_string()).unwrap();
         // bob approves carol to take geode
         contract.approve(carol.clone(), id);
         // carol takes geode
+        let context_carol = get_context_carol(vec![], false);
+        testing_env!(context_carol);
         assert!(contract.transfer_from(carol.clone(), bob.clone(), id));
         // carol has the geode, bob doesn't
         let carol_geodes = contract.geodes_by_owner.get(&carol).unwrap();
@@ -367,6 +407,126 @@ mod tests {
             Some(geodes) => match geodes.binary_search(&id) {
                 Ok(_) => false,
                 Err(_) => true,
+            },
+            None => false
+        });
+    }
+
+    #[test]
+    fn create_cache_smoke() {
+        let context = get_context(vec![], false);
+        let bob = context.signer_account_id.clone();
+        testing_env!(context);
+        let mut contract = GeodesContract::default();
+        // create cache
+        let cache_id = contract.create_cache("bob's super awesome geocache".to_string()).unwrap();
+        // cache id is correct
+        assert_eq!(cache_id, "bobs-super-awesome-geocache.bob".to_string());
+        // cache was created
+        assert!(contract.caches.contains_key(&cache_id));
+        // cache has correct owner
+        assert_eq!(bob, match contract.caches.get(&cache_id) {
+            Some(cache) => cache.owner.clone(),
+            None => "".to_string()
+        });
+        // cache has correct name
+        assert_eq!("bobs-super-awesome-geocache".to_string(), match contract.caches.get(&cache_id) {
+            Some(cache) => cache.name.clone(),
+            None => "".to_string()
+        });
+    }
+
+    #[test]
+    fn sign_cache_smoke() {
+        let context = get_context(vec![], false);
+        let carol = context.predecessor_account_id.clone();
+        testing_env!(context);
+        let mut contract = GeodesContract::default();
+        // bob makes cache
+        let cache_id = contract.create_cache("bob's super awesome geocache".to_string()).unwrap();
+        // carol signs cache log
+        let context_carol = get_context_carol(vec![], false);
+        testing_env!(context_carol);
+        assert!(contract.sign_cache(cache_id.clone(), "Check out the cool geocache I found!".to_string()));
+        // cache log was updated with correct information
+        let log_index: Option<usize> = match contract.caches.get(&cache_id) {
+            Some(cache) => match cache.log.binary_search_by_key(&carol, |elem| { elem.geocacher.clone() }) {
+                Ok(i) => Some(i),
+                Err(_) => None
+            },
+            None => None
+        };
+        assert_ne!(None, log_index);
+        let i = log_index.unwrap();
+        // cache log was updated with correct message
+        assert_eq!("Check out the cool geocache I found!".to_string(), match contract.caches.get(&cache_id) {
+            Some(cache) => cache.log[i].message.clone(),
+            None => "".to_string(),
+        })
+    }
+
+    #[test]
+    fn add_geode_to_cache_smoke() {
+        let context = get_context(vec![], false);
+        let carol = context.predecessor_account_id.clone();
+        testing_env!(context);
+        let mut contract = GeodesContract::default();
+        // bob makes cache
+        let cache_id = contract.create_cache("bob's super awesome geocache".to_string()).unwrap();
+        // carol makes a geode
+        let context_carol = get_context_carol(vec![], false);
+        testing_env!(context_carol);
+        let geode_id = contract.mint_new("This is Carol's cool rock".to_string()).unwrap();
+        // carol adds it to the cache
+        assert!(contract.add_geode_to_cache(cache_id.clone(), geode_id.clone()));
+        let carol_geodes = contract.geodes_by_owner.get(&carol).unwrap();
+        let cache_geodes = contract.geodes_by_owner.get(&cache_id).unwrap();
+        // cache owns the geode, carol doesn't
+        assert!(match cache_geodes.binary_search(&geode_id) {
+            Ok(_) => true,
+            Err(_) => false
+        });
+        assert!(match carol_geodes.binary_search(&geode_id) {
+            Ok(_) => false,
+            Err(_) => true
+        });
+    }
+
+    #[test]
+    fn trade_with_cache_smoke() {
+        let context = get_context(vec![], false);
+        let carol = context.predecessor_account_id.clone();
+        testing_env!(context);
+        let mut contract = GeodesContract::default();
+        // bob makes cache
+        let cache_id = contract.create_cache("bob's super awesome geocache".to_string()).unwrap();
+        // bob makes a geode and puts it in the cache
+        let cache_geode = contract.mint_new("This is Bobs's cool rock".to_string()).unwrap();
+        assert!(contract.add_geode_to_cache(cache_id.clone(), cache_geode.clone()));
+        // carol makes a geode
+        let context_carol = get_context_carol(vec![], false);
+        testing_env!(context_carol);
+        let carol_geode = contract.mint_new("This is Carol's cool rock".to_string()).unwrap();
+        assert!(contract.trade_with_cache(cache_id.clone(), carol_geode, cache_geode));
+        let cache_geodes = contract.geodes_by_owner.get(&cache_id).unwrap();
+        // cache owns the carol's geode
+        assert!(match cache_geodes.binary_search(&carol_geode) {
+            Ok(_) => true,
+            Err(_) => false
+        });
+        // cache still owns cache_geode
+        assert!(match contract.geodes_by_owner.get(&cache_id) {
+            Some(geodes) => match geodes.binary_search(&cache_geode) {
+                Ok(_) => true,
+                Err(_) => false,
+            },
+            None => false
+        });
+        // allowances[carol] includes cache_geode
+        assert!(match contract.allowances.get(&carol) {
+            Some(geodes) => match geodes.binary_search(&cache_geode) {
+                Ok(_) => true,
+                Err(_) => false,
             },
             None => false
         });
