@@ -4,20 +4,20 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use chrono::{Utc};
 
-#[derive(Debug, PartialEq, PartialOrd, Eq, Hash, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
+#[derive(Debug, PartialEq, PartialOrd, Eq, Hash, Serialize, Deserialize, BorshDeserialize, BorshSerialize, Clone)]
 pub struct LogEntry {
     geocacher: String, // geocacher's account id
     date: String, // date signed
     message: String, // a friendly message :)
 }
-#[derive(Debug, Default, Hash, BorshDeserialize, BorshSerialize)]
+#[derive(Debug, Default, Hash, BorshDeserialize, BorshSerialize, Clone)]
 pub struct Geocache {
     log: Vec<LogEntry>,
     owner: String,
     name: String,
 }
 
-#[derive(Debug, PartialEq, PartialOrd, Eq, Hash, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
+#[derive(Debug, PartialEq, PartialOrd, Eq, Hash, Serialize, Deserialize, BorshDeserialize, BorshSerialize, Clone)]
 pub struct Geode {
     holder: String,
     bio: String,
@@ -37,6 +37,27 @@ pub struct GeodesContract {
 
 #[near_bindgen]
 impl GeodesContract {
+
+    pub fn get_cache(&self, cache_id: String) -> Option<Geocache> {
+        match self.caches.get(&cache_id) {
+            Some(cache) => Some(cache.clone()),
+            None => None
+        }
+    }
+
+    pub fn get_geode(&self, geode_id: u64) -> Option<Geode> {
+        match self.geodes.get(&geode_id) {
+            Some(geode) => Some(geode.clone()),
+            None => None
+        }
+    }
+
+    pub fn get_geode_ids_by_owner(&self, owner: String) -> Option<Vec<u64>> {
+        match self.geodes_by_owner.get(&owner) {
+            Some(geodes) => Some(geodes.to_vec()),
+            None => None,
+        }
+    }    
 
     pub fn create_cache(&mut self, name: String) -> Option<String> {
         // cache_id = name.signer_account_id
@@ -80,7 +101,7 @@ impl GeodesContract {
     }
 
     pub fn add_geode_to_cache(&mut self, cache_id: String, geode_id: u64) -> bool {
-        self.do_transfer(cache_id, env::signer_account_id(), geode_id)
+        self.transfer(cache_id, geode_id)
     }
 
     pub fn trade_with_cache(&mut self, cache_id: String, give: u64, take: u64) -> bool {
