@@ -30,6 +30,8 @@
     "shelljs": "^0.8.4"
   },
   "dependencies": {
+    "@babel/core": "^7.9.6",
+    "components": "^0.1.0",
     "near-api-js": "^0.24.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
