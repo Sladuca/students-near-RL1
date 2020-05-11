@@ -10,7 +10,7 @@ pub struct LogEntry {
     date: String, // date signed
     message: String, // a friendly message :)
 }
-#[derive(Debug, Default, Hash, BorshDeserialize, BorshSerialize, Clone)]
+#[derive(Debug, Default, Hash,  Serialize, Deserialize, BorshDeserialize, BorshSerialize, Clone)]
 pub struct Geocache {
     log: Vec<LogEntry>,
     owner: String,
@@ -25,7 +25,7 @@ pub struct Geode {
 }
 
 #[near_bindgen]
-#[derive(Default, BorshDeserialize, BorshSerialize)]
+#[derive(Default, Serialize, Deserialize, BorshDeserialize, BorshSerialize)]
 pub struct GeodesContract {
     counter: u64,
     caches: HashMap<String, Geocache>,
