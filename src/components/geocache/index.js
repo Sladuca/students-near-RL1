@@ -17,6 +17,13 @@ class Geocache extends React.Component {
     });
   }
 
+  async getCache() {
+    //get geocache data: log, owner, name
+    const cache_id = await this.props.contract.get_cache({cache_id: id_from_text });
+    const 
+    console.log(cache_id);
+  }
+
   render() {
     return <Presenter updateText={(e) => this.updateText(e)}/>
   }

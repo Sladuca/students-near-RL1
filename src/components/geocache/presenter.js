@@ -2,6 +2,12 @@ import React from 'react';
 
 export default ({ updateText }) => {
   return (
-    <input onChange={updateText} placeholder="cache_id here!"></input>
-  )
+    <div>
+      <input onChange={updateText} placeholder="cache_id here!"></input>
+      <button onChange={getCache}>submit</button>
+      <button>trade with cache</button>
+      <button>add to cache</button>
+      <button onChange={updateLog}>sign cache</button>
+    </div>
+    )
 }
