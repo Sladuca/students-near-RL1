@@ -13,9 +13,9 @@ beforeAll(async function () {
     near = await nearlib.connect(nearConfig);
     accountId = nearConfig.contractName;
     contract = await near.loadContract(nearConfig.contractName, {
-        viewMethods: ['welcome'],
-        changeMethods: [],
-        sender: accountId
+      viewMethods: ['get_cache', 'get_geode', 'get_geode_ids_by_owner'],
+      changeMethods: ['create_cache', 'sign_cache', 'add_geode_to_cache', 'trade_with_cache', 'mint_new', 'mint_copy', 'approve', 'transfer_from', 'transfer'],
+      sender: window.accountId
     });
 
     // Fake instance of WalletConnection

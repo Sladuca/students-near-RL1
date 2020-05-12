@@ -1,6 +1,7 @@
 import 'regenerator-runtime/runtime';
 import React, { Component } from 'react';
-import Geocache from './components/geocache'
+import Geocache from './components/geocache';
+import Satchel from './components/satchel';
 import './App.css';
 
 class App extends Component {
@@ -8,6 +9,7 @@ class App extends Component {
     super(props);
     this.state = {
       login: false,
+      page: 'geocache'
     }
     this.funcs = {
       signedInFlow: this.signedInFlow.bind(this),
@@ -30,6 +32,7 @@ class App extends Component {
     console.log("come in sign in flow")
     this.setState({
       login: true,
+      page: 'geocache'
     })
     const accountId = await this.props.wallet.getAccountId()
     if (window.location.search.includes("account_id")) {
@@ -57,20 +60,45 @@ class App extends Component {
     }
     this.setState({
       login: false,
-      speech: null
+      page: 'geocache'
+    })
+  }
+
+  goToPage(page) {
+    this.setState({
+      ...this.state,
+      page
     })
   }
 
   render() {
     // define some kind if sign in screen
     if (!this.state.login) {
-      return <button onMxouseUp={this.requestSignIn}/>
+      return <button onMouseUp={(e) => this.requestSignIn(e)}/>
     }
-    return (
-      <Geocache funcs={ this.funcs }/>
-    )
+    switch (this.state.page) {
+      case 'geocache':
+        return (
+          <>
+            <Geocache funcs={ this.funcs } contract={this.props.contract} wallet={this.props.wallet}/>
+            <label htmlFor="satchel">open satchel</label>
+            <button id="satchel" onMouseUp={(e) => this.goToPage('satchel')}></button>
+          </>
+        )
+      case 'satchel':
+        return (
+          <>
+            <Satchel contract={this.props.contract} wallet={this.props.wallet}/>
+            <label htmlFor="geocache">open geocache</label>
+            <button id="geocache" onMouseUp={(e) => this.goToPage('geocache')}></button>
+          </>
+        )
+      default:
+        return (
+          <h1>Page does not exist!</h1>
+        )
+    }
   }
-
 }
 
 export default App;
