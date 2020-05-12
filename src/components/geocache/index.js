@@ -20,7 +20,7 @@ class Geocache extends React.Component {
   async getCache() {
     //get geocache data: log, owner, name
     const cache_id = await this.props.contract.get_cache({cache_id: id_from_text });
-    const 
+    console.log(this.cache_id.log); // not sure about this line. want to get the log from the cache
     console.log(cache_id);
   }
 
