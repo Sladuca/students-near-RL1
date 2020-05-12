@@ -35,6 +35,7 @@ class App extends Component {
       page: 'geocache'
     })
     const accountId = await this.props.wallet.getAccountId()
+    console.log(accountId)
     if (window.location.search.includes("account_id")) {
       window.location.replace(window.location.origin + window.location.pathname)
     }

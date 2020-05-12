@@ -8,6 +8,9 @@ class Satchel extends React.Component {
       satchel: [],
       bioInput: ''
     }
+    this.mintNew = this.mintNew.bind(this);
+    this.getGeodes = this.getGeodes.bind(this);
+    this.updateText = this.updateText.bind(this);
   }
 
   updateText(e) {
@@ -19,9 +22,7 @@ class Satchel extends React.Component {
 
   async getGeodes() {
     // get geode id's
-    const accountId = await this.props.wallet.getAccountId();
-    const ids = await this.props.contract.get_geode_ids_by_owner({ owner: accountId }) || [];
-    console.log(ids)
+    const ids = await this.props.contract.get_geode_ids_by_owner({ owner: window.accountId }) || [];
     // fetch geode structs concurrently
     const geodePromises = ids.map(id => this.props.contract.get_geode({ geode_id: id }));
     const geodes = await Promise.all(geodePromises);
@@ -37,28 +38,12 @@ class Satchel extends React.Component {
       console.log('must be <= 280 characters!');
       return;
     }
-    const geode_id = await this.props.contract.mint_new({ bio });
-    if (!geode_id) {
-      console.log('mint failed!')
-      return;
-    }
-    const geode = await this.props.contract.get_geode({ geode_id });
-    if (!geode) {
-      console.log('geode doesnt exist???')
-      return;
-    }
-    this.setState({
-      ...this.state,
-      satchel: [...this.state.satchel, geode]
-    });
+    await this.props.contract.mint_new({ bio: bio });
+    await this.getGeodes();
   }
 
   render() {
-    return <Presenter satchel={this.state.satchel} getGeodes={async (e) => this.getGeodes()} mintNew={async (e) => {
-      if (e.key === 'Enter') {
-        await this.mintNew()
-      }
-    }} updateText={(e) => this.updateText(e)}/>
+    return <Presenter satchel={this.state.satchel} getGeodes={this.getGeodes} mintNew={this.mintNew} updateText={this.updateText}/>
   }
 }
 

@@ -1,4 +1,4 @@
-const CONTRACT_NAME = process.env.CONTRACT_NAME ||'rl1-hackathon';
+const CONTRACT_NAME = process.env.CONTRACT_NAME ||'geodes';
 
 function getConfig(env) {
     switch (env) {
