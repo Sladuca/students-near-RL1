@@ -10,6 +10,7 @@ export default () => (
       <Row>
         <Col><Navbar.Text><Link to="/geocache">Geocache</Link></Navbar.Text></Col>
         <Col><Navbar.Text><Link to="/satchel">Satchel</Link></Navbar.Text></Col>
+        <Col><Navbar.Text><Link to="/create_geocache">Create</Link></Navbar.Text></Col>
       </Row>
     </Navbar.Collapse>
   </Navbar>

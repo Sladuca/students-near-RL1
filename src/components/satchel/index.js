@@ -20,8 +20,7 @@ class Satchel extends React.Component {
     });
   }
 
-  async getGeodes(e) {
-    e.preventDefault();
+  async getGeodes() {
     // get geode id's
     const ids = await this.props.contract.get_geode_ids_by_owner({ owner: window.accountId }) || [];
     // fetch geode structs concurrently
@@ -44,7 +43,7 @@ class Satchel extends React.Component {
   }
 
   render() {
-    return <Presenter satchel={this.state.satchel} getGeodes={this.getGeodes} mintNew={this.mintNew} updateText={this.updateText}/>
+    return <Presenter satchel={this.state.satchel} getGeodes={(e) => { e.preventDefault(); this.getGeodes() }} mintNew={this.mintNew} updateText={this.updateText}/>
   }
 }
 

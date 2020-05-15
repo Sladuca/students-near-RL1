@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use chrono::{Utc};
 
-#[derive(Debug, PartialEq, PartialOrd, Eq, Hash, Serialize, Deserialize, BorshDeserialize, BorshSerialize, Clone)]
+#[derive(Debug, Default, PartialEq, PartialOrd, Eq, Hash, Serialize, Deserialize, BorshDeserialize, BorshSerialize, Clone)]
 pub struct LogEntry {
     geocacher: String, // geocacher's account id
     date: String, // date signed

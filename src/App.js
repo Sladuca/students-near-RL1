@@ -5,6 +5,7 @@ import Geocache from './components/geocache';
 import Satchel from './components/satchel';
 import Navbar from './components/navbar';
 import SignIn from './components/signin';
+import CreateCache from './components/createCache';
 import { Container, Row, Col } from 'react-bootstrap';
 import {
   BrowserRouter as Router,
@@ -91,6 +92,9 @@ class App extends Component {
             </Route>
             <Route path="/satchel">
               <Satchel contract={this.props.contract} wallet={this.props.wallet}/>
+            </Route>
+            <Route path="/create_geocache">
+              <CreateCache contract={this.props.contract} wallet={this.props.wallet}/>
             </Route>
             <Route path="/">
               <h1>Home!</h1>
