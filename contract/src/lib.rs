@@ -2,7 +2,6 @@ use near_sdk::{near_bindgen, env};
 use borsh::{BorshDeserialize, BorshSerialize};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use chrono::{Utc};
 
 #[derive(Debug, Default, PartialEq, PartialOrd, Eq, Hash, Serialize, Deserialize, BorshDeserialize, BorshSerialize, Clone)]
 pub struct LogEntry {
@@ -88,7 +87,7 @@ impl GeodesContract {
     pub fn sign_cache(&mut self, cache_id: String, message: String) -> bool {
         let log_entry = LogEntry {
             geocacher: env::signer_account_id(),
-            date: Utc::now().to_string(),
+            date: env::block_timestamp().to_string(),
             message: message
         };
         match self.caches.get_mut(&cache_id) {
