@@ -1,13 +1,24 @@
 import React from 'react';
+import { Row, Col, Form, Button} from 'react-bootstrap';
 
 export default ({ updateText, getCache }) => {
   return (
-    <div>
-      <input onChange={updateText} placeholder="cache_id here!"></input>
-      <button onChange={getCache}>submit</button>
-      <button>trade with cache</button>
-      <button>add to cache</button>
-      {/* <button onChange={updateLog}>sign cache</button> */}
-    </div>
-    )
+    <>
+      <Row>
+        <Col>
+          <Form noValidate onSubmit={getCache}>
+            <Row>
+              <Col>
+                <Form.Control onChange={updateText} type="text" placeholder="cache id" />
+              </Col>
+              <Col>
+                <Button variant="primary" type="submit">Get Cache!</Button>
+              </Col>
+            </Row>
+          </Form>
+        </Col>
+      </Row>
+      {/* Still have to add trade with / add to cache */}
+    </>
+  );
 }
