@@ -9,7 +9,7 @@
     "deploy:contract": "near deploy --wasmFile ./contract/res/geodes.wasm",
     "deploy:pages": "gh-pages -d dist/",
     "deploy": "npm run build && npm run deploy:contract && npm run deploy:pages",
-    "prestart": "npm run build:contract && npm run dev:deploy:contract",
+    "prestart": "npm run build:contract && npm run dev:deploy:contract ",
     "start": "env-cmd -f ./neardev/dev-account.env parcel src/index.html",
     "dev": "nodemon --watch assembly -e ts --exec \"npm run start\"",
     "test": "cd contract && cargo test --package geodes -- --nocapture"
@@ -31,12 +31,14 @@
   },
   "dependencies": {
     "@babel/core": "^7.9.6",
+    "bootstrap": "^4.5.0",
     "components": "^0.1.0",
     "near-api-js": "^0.24.0",
     "react": "^16.13.1",
+    "react-bootstrap": "^1.0.1",
     "react-dom": "^16.13.1",
-    "regenerator-runtime": "^0.13.5",
-    "tailwindcss": "^1.4.6"
+    "react-router-dom": "^5.2.0",
+    "regenerator-runtime": "^0.13.5"
   },
   "eslintConfig": {
     "extends": "react-app"

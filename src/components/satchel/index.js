@@ -20,7 +20,8 @@ class Satchel extends React.Component {
     });
   }
 
-  async getGeodes() {
+  async getGeodes(e) {
+    e.preventDefault();
     // get geode id's
     const ids = await this.props.contract.get_geode_ids_by_owner({ owner: window.accountId }) || [];
     // fetch geode structs concurrently

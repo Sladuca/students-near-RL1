@@ -1,15 +1,22 @@
+import 'bootstrap/dist/css/bootstrap.min.css';
 import 'regenerator-runtime/runtime';
 import React, { Component } from 'react';
 import Geocache from './components/geocache';
 import Satchel from './components/satchel';
-import './App.css';
+import Navbar from './components/navbar';
+import SignIn from './components/signin';
+import { Container, Row, Col } from 'react-bootstrap';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+} from "react-router-dom";
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
       login: false,
-      page: 'geocache'
     }
     this.funcs = {
       signedInFlow: this.signedInFlow.bind(this),
@@ -32,7 +39,6 @@ class App extends Component {
     console.log("come in sign in flow")
     this.setState({
       login: true,
-      page: 'geocache'
     })
     const accountId = await this.props.wallet.getAccountId()
     console.log(accountId)
@@ -61,44 +67,38 @@ class App extends Component {
     }
     this.setState({
       login: false,
-      page: 'geocache'
-    })
-  }
-
-  goToPage(page) {
-    this.setState({
-      ...this.state,
-      page
     })
   }
 
   render() {
     // define some kind if sign in screen
     if (!this.state.login) {
-      return <button onMouseUp={(e) => this.requestSignIn(e)}/>
+      return (
+          <SignIn requestSignIn={this.requestSignIn}/>
+      );
     }
-    switch (this.state.page) {
-      case 'geocache':
-        return (
-          <>
-            <Geocache funcs={ this.funcs } contract={this.props.contract} wallet={this.props.wallet}/>
-            <label htmlFor="satchel">open satchel</label>
-            <button id="satchel" onMouseUp={(e) => this.goToPage('satchel')}></button>
-          </>
-        )
-      case 'satchel':
-        return (
-          <>
-            <Satchel contract={this.props.contract} wallet={this.props.wallet}/>
-            <label htmlFor="geocache">open geocache</label>
-            <button id="geocache" onMouseUp={(e) => this.goToPage('geocache')}></button>
-          </>
-        )
-      default:
-        return (
-          <h1>Page does not exist!</h1>
-        )
-    }
+    return (
+      <Router>
+        <Container>
+          <Row>
+            <Col>
+              <Navbar/>
+            </Col>
+          </Row>
+          <Switch>
+            <Route path="/geocache">
+              <Geocache contract={this.props.contract} wallet={this.props.wallet}/>
+            </Route>
+            <Route path="/satchel">
+              <Satchel contract={this.props.contract} wallet={this.props.wallet}/>
+            </Route>
+            <Route path="/">
+              <h1>Home!</h1>
+            </Route>
+          </Switch>
+        </Container>
+      </Router>
+    );
   }
 }
 
