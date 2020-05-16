@@ -21,6 +21,8 @@ pub struct Geode {
     holder: String,
     bio: String,
     creator: String,
+    latitude: String,
+    longitude: String,
 }
 
 #[near_bindgen]
@@ -31,7 +33,7 @@ pub struct GeodesContract {
     geodes: HashMap<u64, Geode>,
     geodes_by_owner: HashMap<String, Vec<u64>>,
     allowances: HashMap<String, Vec<u64>>,
-    
+
 }
 
 #[near_bindgen]
@@ -56,7 +58,7 @@ impl GeodesContract {
             Some(geodes) => Some(geodes.to_vec()),
             None => None,
         }
-    }    
+    }
 
     pub fn create_cache(&mut self, name: String) -> Option<String> {
         // cache_id = name.signer_account_id
@@ -113,14 +115,18 @@ impl GeodesContract {
         self.approve(env::signer_account_id(), take)
     }
 
-    pub fn mint_new(&mut self, bio: String) -> Option<u64> {
-        if bio.chars().count() > 280 {
+    pub fn mint_new(&mut self, bio: String, latitude: String, longitude: String) -> Option<u64> {
+
+        if bio.chars().count() > 280 || latitude.chars().count() > 150 || longitude.chars().count() > 150 {
             return None
         }
+
         let id = self.counter;
         self.geodes.insert(id, Geode {
             holder: env::signer_account_id(),
             bio: bio.clone(),
+            latitude: latitude.clone(),
+            longitude: longitude.clone(),
             creator: env::signer_account_id(),
         });
         match self.geodes_by_owner.get_mut(&env::signer_account_id()) {
@@ -137,14 +143,22 @@ impl GeodesContract {
     }
 
     pub fn mint_copy(&mut self, geode_id: u64) -> Option<u64> {
-        let bio = match self.geodes.get(&geode_id) {
-            Some(geode) => geode.bio.clone(),
+        let geode = match self.geodes.get(&geode_id) {
+            Some(geode) => {
+                geode.clone()
+            },
             None => return None
         };
+
+
+
+
         let id = self.counter;
         self.geodes.insert(id, Geode {
             holder: env::signer_account_id(),
-            bio: bio,
+            bio: geode.bio,
+            latitude: geode.latitude,
+            longitude: geode.longitude,
             creator: env::signer_account_id(),
         });
         match self.geodes_by_owner.get_mut(&env::signer_account_id()) {
@@ -159,7 +173,7 @@ impl GeodesContract {
         self.counter += 1;
         Some(id)
     }
-    
+
     pub fn approve(&mut self, spender: String, geode_id: u64) -> bool {
         // make sure geode exists
         match self.geodes.get(&geode_id) {
@@ -305,7 +319,7 @@ mod tests {
             output_data_receivers: vec![],
         }
     }
-    
+
     #[test]
     fn mint_geode_smoke() {
         let context = get_context(vec![], false);
@@ -313,10 +327,14 @@ mod tests {
         testing_env!(context);
         let mut contract = GeodesContract::default();
         let bio = "It's a dangerous business, Frodo, going out your door. You step onto the road, and if you don't keep your feet, there's no knowing where you might be swept off to.".to_string();
-        let id = contract.mint_new(bio.clone()).unwrap();
+        let latitude = "32.715736".to_string();
+        let longitude = "-117.161087".to_string();
+        let id = contract.mint_new(bio.clone(), latitude.clone(), longitude.clone()).unwrap();
         let geode = contract.geodes.get(&id);
         assert_ne!(geode, None);
         assert_eq!(bio, geode.unwrap().bio);
+        assert_eq!(latitude, geode.unwrap().latitude);
+        assert_eq!(longitude, geode.unwrap().longitude);
         let bob_geodes = contract.geodes_by_owner.get(&bob).unwrap();
         assert!(match bob_geodes.binary_search(&id) {
             Ok(_) => true,
@@ -330,7 +348,7 @@ mod tests {
         let bob = context.signer_account_id.clone();
         testing_env!(context);
         let mut contract = GeodesContract::default();
-        let template_id = contract.mint_new("mint copy smoke".to_string()).unwrap();
+        let template_id = contract.mint_new("mint copy smoke".to_string(), "32.715736".to_string(), "-117.161087".to_string()).unwrap();
         let copy_id = contract.mint_copy(template_id).unwrap();
         let template = contract.geodes.get(&template_id).unwrap();
         let copy = contract.geodes.get(&copy_id).unwrap();
@@ -349,7 +367,7 @@ mod tests {
         let carol = context.predecessor_account_id.clone();
         testing_env!(context);
         let mut contract = GeodesContract::default();
-        let id = contract.mint_new("transfer smoke".to_string()).unwrap();
+        let id = contract.mint_new("transfer smoke".to_string(), "32.715736".to_string(), "-117.161087".to_string()).unwrap();
         // it doesn't fail
         assert!(contract.transfer(carol.clone(), id));
         let carol_geodes = contract.geodes_by_owner.get(&carol).unwrap();
@@ -375,7 +393,7 @@ mod tests {
         testing_env!(context);
         let mut contract = GeodesContract::default();
         // bob makes a geode
-        let id = contract.mint_new("approve smoke".to_string()).unwrap();
+        let id = contract.mint_new("approve smoke".to_string(), "32.715736".to_string(), "-117.161087".to_string()).unwrap();
         // bob approves carol to take geode
         assert!(contract.approve(carol.clone(), id));
         // bob still owns geode
@@ -404,7 +422,7 @@ mod tests {
         testing_env!(context);
         let mut contract = GeodesContract::default();
         // bob makes a geode
-        let id = contract.mint_new("transfer_from smoke".to_string()).unwrap();
+        let id = contract.mint_new("transfer_from smoke".to_string(), "32.715736".to_string(), "-117.161087".to_string()).unwrap();
         // bob approves carol to take geode
         contract.approve(carol.clone(), id);
         // carol takes geode
@@ -496,7 +514,7 @@ mod tests {
         // carol makes a geode
         let context_carol = get_context_carol(vec![], false);
         testing_env!(context_carol);
-        let geode_id = contract.mint_new("This is Carol's cool rock".to_string()).unwrap();
+        let geode_id = contract.mint_new("This is Carol's cool rock".to_string(), "32.715736".to_string(), "-117.161087".to_string()).unwrap();
         // carol adds it to the cache
         assert!(contract.add_geode_to_cache(cache_id.clone(), geode_id.clone()));
         let carol_geodes = contract.geodes_by_owner.get(&carol).unwrap();
@@ -521,12 +539,12 @@ mod tests {
         // bob makes cache
         let cache_id = contract.create_cache("bob's super awesome geocache".to_string()).unwrap();
         // bob makes a geode and puts it in the cache
-        let cache_geode = contract.mint_new("This is Bobs's cool rock".to_string()).unwrap();
+        let cache_geode = contract.mint_new("This is Bobs's cool rock".to_string(), "32.715736".to_string(), "-117.161087".to_string()).unwrap();
         assert!(contract.add_geode_to_cache(cache_id.clone(), cache_geode.clone()));
         // carol makes a geode
         let context_carol = get_context_carol(vec![], false);
         testing_env!(context_carol);
-        let carol_geode = contract.mint_new("This is Carol's cool rock".to_string()).unwrap();
+        let carol_geode = contract.mint_new("This is Carol's cool rock".to_string(), "35.715736".to_string(), "-110.161087".to_string()).unwrap();
         assert!(contract.trade_with_cache(cache_id.clone(), carol_geode, cache_geode));
         let cache_geodes = contract.geodes_by_owner.get(&cache_id).unwrap();
         // cache owns the carol's geode
