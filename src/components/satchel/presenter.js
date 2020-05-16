@@ -4,7 +4,7 @@ import { Form, Row, Col, Button, Table } from 'react-bootstrap';
 export default ({ satchel, getGeodes, updateText, mintNew }) => {
   return (
     <div className="flex flex-col">
-      <div className="flex flex-row py-4 justify-end">
+      <div className="flex flex-row py-4 justify-end ">
         <Form noValidate onSubmit={mintNew}>
           <div className="flex flex-row">
             <Form.Control onChange={updateText} type="text" placeholder="bio" />
