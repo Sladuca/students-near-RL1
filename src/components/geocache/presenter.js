@@ -8,7 +8,7 @@ export default ({ updateMsg, updateSearch, getCache, signCache, cache }) => {
 
   const cacheDetails = !cache.log ? '' : (
     <>
-      <Row>
+      <Row>`x`
         <Col>
           <Button onMouseUp={handleOpen}>
             Open Cache!

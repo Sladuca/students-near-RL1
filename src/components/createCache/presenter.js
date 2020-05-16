@@ -1,7 +1,7 @@
 import React from 'react';
-import { Row, Col, Form, Button } from 'react-bootstrap';
+import { Row, Col, Form, Button, Alert } from 'react-bootstrap';
 
-export default ({ updateText, createCache }) => (
+export default ({ updateText, createCache, createResults }) => (
   <>
     <Row>
       <Col>
@@ -11,12 +11,20 @@ export default ({ updateText, createCache }) => (
               <Form.Control onChange={updateText} type="text" placeholder="cache name" />
             </Col>
             <Col>
-              <Button variant="primary" type="submit">Create Cache!</Button>
+              <Button variant="primary" type="submit">Register!</Button>
             </Col>
           </Row>
         </Form>
       </Col>
     </Row>
-    {/* Still have to add trade with / add to cache */}
+    <div className="flex flex-col">
+      {createResults.map((res, i) => (
+        <div className="flex flex-row py-4">
+          <Alert key={i} variant={res ? 'success' : 'danger'}>
+            {res ? `successfully registered geocache with id ${res} 🎉` : `failed to register geocache 😭`}
+          </Alert>
+        </div>
+      ))}
+    </div>
   </>
 );

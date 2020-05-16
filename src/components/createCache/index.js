@@ -7,7 +7,7 @@ class CreateCache extends React.Component {
     this.state = {
       login: false,
       cacheName: '',
-      createResult: '',
+      createResults : [],
     };
   }
 
@@ -21,18 +21,16 @@ class CreateCache extends React.Component {
   async createCache() {
     const cacheId = await this.props.contract.create_cache({ name: this.state.cacheName });
     // returns null on error
-    if (!cacheId) {
-      return;
-    }
+    const newCacheResults = cacheId ? [...this.state.createResults, cacheId] : [...this.state.createResults, false]
     this.setState({
       ...this.state,
-      createResult: cacheId
+      createResults: newCacheResults
     });
   }
 
   render() {
     return (
-      <Presenter updateText={(e) => { this.updateText(e.target.value) }} createCache={(e) => { e.preventDefault(); this.createCache() }}/>
+      <Presenter createResults={this.state.createResults} updateText={(e) => { this.updateText(e.target.value) }} createCache={(e) => { e.preventDefault(); this.createCache() }}/>
     )
   }
 }
