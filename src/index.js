@@ -1,5 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import './assets/main.css'
+
 import App from './App';
 import getConfig from './config.js';
 import * as nearlib from 'near-api-js';
@@ -31,7 +33,7 @@ async function initContract() {
 }
 
 window.nearInitPromise = initContract().then(() => {
-  ReactDOM.render(<App contract={window.contract} wallet={window.walletAccount} />,
+  ReactDOM.render(<App className="bg-white" contract={window.contract} wallet={window.walletAccount} />,
     document.getElementById('root')
   );
 }).catch(console.error)

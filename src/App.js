@@ -5,12 +5,14 @@ import Geocache from './components/geocache';
 import Satchel from './components/satchel';
 import Navbar from './components/navbar';
 import SignIn from './components/signin';
+import Home from './components/home';
 import CreateCache from './components/createCache';
 import { Container, Row, Col } from 'react-bootstrap';
 import {
   BrowserRouter as Router,
   Switch,
   Route,
+  Redirect
 } from "react-router-dom";
 
 class App extends Component {
@@ -72,32 +74,27 @@ class App extends Component {
   }
 
   render() {
-    // define some kind if sign in screen
-    if (!this.state.login) {
-      return (
-          <SignIn requestSignIn={this.requestSignIn}/>
-      );
-    }
+    const redirectIfNotSignedIn = (child) => this.state.login ? child : <Redirect to="/"/>
     return (
       <Router>
         <Container>
-          <Row>
+          <Row className="bg-green-500 shadow mb-8">
             <Col>
-              <Navbar/>
+              <Navbar isSignedIn={this.state.login}/>
             </Col>
           </Row>
           <Switch>
             <Route path="/geocache">
-              <Geocache contract={this.props.contract} wallet={this.props.wallet}/>
+              { redirectIfNotSignedIn(<Geocache contract={this.props.contract} wallet={this.props.wallet}/>)}
             </Route>
             <Route path="/satchel">
-              <Satchel contract={this.props.contract} wallet={this.props.wallet}/>
+              { redirectIfNotSignedIn(<Satchel contract={this.props.contract} wallet={this.props.wallet}/>) }
             </Route>
             <Route path="/create_geocache">
-              <CreateCache contract={this.props.contract} wallet={this.props.wallet}/>
+              { redirectIfNotSignedIn(<CreateCache contract={this.props.contract} wallet={this.props.wallet}/>) }
             </Route>
             <Route path="/">
-              <h1>Home!</h1>
+              <Home isSignedIn={this.state.login} requestSignIn={this.requestSignIn}/>
             </Route>
           </Switch>
         </Container>

@@ -3,20 +3,22 @@
   "version": "0.1.0",
   "scripts": {
     "build": "npm run build:contract && npm run build:web",
+    "build:css": "postcss src/assets/tailwind.css -o src/assets/main.css",
     "build:contract": "node ./contract/build",
     "build:web": "parcel build src/index.html --public-url ./",
     "dev:deploy:contract": "near dev-deploy --wasmFile ./contract/res/geodes.wasm",
     "deploy:contract": "near deploy --wasmFile ./contract/res/geodes.wasm",
     "deploy:pages": "gh-pages -d dist/",
     "deploy": "npm run build && npm run deploy:contract && npm run deploy:pages",
-    "prestart": "npm run build:contract && npm run dev:deploy:contract ",
-    "start": "env-cmd -f ./neardev/dev-account.env parcel src/index.html",
+    "prestart": "npm run build:contract && npm run dev:deploy:contract",
+    "start": "npm run build:css && env-cmd -f ./neardev/dev-account.env parcel src/index.html",
     "dev": "nodemon --watch assembly -e ts --exec \"npm run start\"",
     "test": "cd contract && cargo test --package geodes -- --nocapture"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.9.5",
     "@babel/preset-react": "^7.9.4",
+    "autoprefixer": "^9.7.6",
     "babel-jest": "^26.0.0",
     "env-cmd": "^10.1.0",
     "gh-pages": "^2.2.0",
@@ -26,6 +28,7 @@
     "near-shell": "^0.22.0",
     "nodemon": "^2.0.3",
     "parcel-bundler": "^1.12.4",
+    "postcss-cli": "^7.1.1",
     "react-test-renderer": "^16.13.1",
     "shelljs": "^0.8.4"
   },
@@ -38,7 +41,8 @@
     "react-bootstrap": "^1.0.1",
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.2.0",
-    "regenerator-runtime": "^0.13.5"
+    "regenerator-runtime": "^0.13.5",
+    "tailwindcss": "^1.4.6"
   },
   "eslintConfig": {
     "extends": "react-app"
