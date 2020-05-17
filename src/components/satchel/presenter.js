@@ -21,6 +21,7 @@ export default ({ satchel, getGeodes, updateText, mintNew }) => {
         <Table striped bordered hover>
           <thead>
             <tr>
+              <th>ID</th>
               <th>Owner</th>
               <th>Creator</th>
               <th>Bio</th>
@@ -29,6 +30,7 @@ export default ({ satchel, getGeodes, updateText, mintNew }) => {
           <tbody>
           { satchel.map((geode, i) => (
             <tr key={i}>
+              <td>{ geode.id }</td>
               <td>{ geode.holder }</td>
               <td>{ geode.creator }</td>
               <td>{ geode.bio }</td>

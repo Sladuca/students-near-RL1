@@ -19,8 +19,8 @@ export default ({ updateText, createCache, createResults }) => (
     </Row>
     <div className="flex flex-col">
       {createResults.map((res, i) => (
-        <div className="flex flex-row py-4">
-          <Alert key={i} variant={res ? 'success' : 'danger'}>
+        <div key={i} className="flex flex-row py-4">
+          <Alert variant={res ? 'success' : 'danger'}>
             {res ? `successfully registered geocache with id ${res} 🎉` : `failed to register geocache 😭`}
           </Alert>
         </div>

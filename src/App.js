@@ -20,12 +20,14 @@ class App extends Component {
     super(props);
     this.state = {
       login: false,
+      satchel: [],
     }
     this.funcs = {
       signedInFlow: this.signedInFlow.bind(this),
       requestSignIn: this.requestSignIn.bind(this),
       requestSignOut: this.requestSignOut.bind(this),
-      signedOutFlow: this.signedOutFlow.bind(this)
+      signedOutFlow: this.signedOutFlow.bind(this),
+      getGeodes: this.getGeodes.bind(this)
     }
   }
 
@@ -33,6 +35,7 @@ class App extends Component {
     let loggedIn = this.props.wallet.isSignedIn();
     if (loggedIn) {
       this.signedInFlow();
+      this.getGeodes();
     } else {
       this.signedOutFlow();
     }
@@ -73,6 +76,18 @@ class App extends Component {
     })
   }
 
+  async getGeodes() {
+    // get geode id's
+    const ids = await this.props.contract.get_geode_ids_by_owner({ owner: window.accountId }) || [];
+    // fetch geode structs concurrently
+    const geodePromises = ids.map(id => this.props.contract.get_geode({ geode_id: id }));
+    const geodes = await Promise.all(geodePromises);
+    this.setState({
+      ...this.state,
+      satchel: geodes.map((geode, i) => ({ ...geode, id: ids[i] }))
+    });
+  }
+
   render() {
     const redirectIfNotSignedIn = (child) => this.state.login ? child : <Redirect to="/"/>
     return (
@@ -85,16 +100,16 @@ class App extends Component {
           </Row>
           <Switch>
             <Route path="/geocache">
-              { redirectIfNotSignedIn(<Geocache contract={this.props.contract} wallet={this.props.wallet}/>)}
+              { redirectIfNotSignedIn(<Geocache contract={this.props.contract} wallet={this.props.wallet} getGeodes={this.funcs.getGeodes} satchel={this.state.satchel}/>)}
             </Route>
             <Route path="/satchel">
-              { redirectIfNotSignedIn(<Satchel contract={this.props.contract} wallet={this.props.wallet}/>) }
+              { redirectIfNotSignedIn(<Satchel contract={this.props.contract} wallet={this.props.wallet} getGeodes={this.funcs.getGeodes} satchel={this.state.satchel}/>) }
             </Route>
             <Route path="/create_geocache">
               { redirectIfNotSignedIn(<CreateCache contract={this.props.contract} wallet={this.props.wallet}/>) }
             </Route>
             <Route path="/">
-              <Home isSignedIn={this.state.login} requestSignIn={this.requestSignIn}/>
+              <Home isSignedIn={this.state.login} requestSignIn={this.funcs.requestSignIn}/>
             </Route>
           </Switch>
         </Container>

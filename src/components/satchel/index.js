@@ -5,11 +5,9 @@ class Satchel extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      satchel: [],
       bioInput: ''
     }
     this.mintNew = this.mintNew.bind(this);
-    this.getGeodes = this.getGeodes.bind(this);
     this.updateText = this.updateText.bind(this);
   }
 
@@ -20,18 +18,6 @@ class Satchel extends React.Component {
     });
   }
 
-  async getGeodes() {
-    // get geode id's
-    const ids = await this.props.contract.get_geode_ids_by_owner({ owner: window.accountId }) || [];
-    // fetch geode structs concurrently
-    const geodePromises = ids.map(id => this.props.contract.get_geode({ geode_id: id }));
-    const geodes = await Promise.all(geodePromises);
-    this.setState({
-      ...this.state,
-      satchel: geodes
-    });
-  }
-
   async mintNew() {
     const bio = this.state.bioInput;
     if (bio.length > 280) {
@@ -39,11 +25,11 @@ class Satchel extends React.Component {
       return;
     }
     await this.props.contract.mint_new({ bio: bio });
-    await this.getGeodes();
+    await this.props.getGeodes();
   }
 
   render() {
-    return <Presenter satchel={this.state.satchel} getGeodes={(e) => { e.preventDefault(); this.getGeodes() }} mintNew={this.mintNew} updateText={this.updateText}/>
+    return <Presenter satchel={this.props.satchel} getGeodes={(e) => { e.preventDefault(); this.props.getGeodes() }} mintNew={async (e) => { e.preventDefault(); await this.mintNew() }} updateText={this.updateText}/>
   }
 }
 
