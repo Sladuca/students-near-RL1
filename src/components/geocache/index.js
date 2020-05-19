@@ -136,13 +136,14 @@ class Geocache extends React.Component {
       return;
     }
     console.log(`addToCache: geode ${this.state.tradeSelect.give}`)
-    const addResult = await this.props.contract.add_geode_to_cache({ cache_id: this.state.cache.id, geode_id: this.state.tradeSelect.give });
-    this.setState({
-      ...this.state,
-      addResult
-    });
-    await Promise.all([this.getCache(this.state.cache.id), this.props.getGeodes()]);
-    console.log(`done: addToCache`)
+    const addResult = await this.props.contract.add_geode_to_cache({ cache_id: this.state.cache.id, geode_id: this.state.tradeSelect.give});
+      this.setState({
+        ...this.state,
+        addResult
+      });
+      await Promise.all([this.getCache(this.state.cache.id), this.props.getGeodes()]);
+      console.log(`done: addToCache`)
+    
   }
 
   async handleSubmitTrade(e) {

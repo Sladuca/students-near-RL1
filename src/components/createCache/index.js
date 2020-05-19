@@ -19,7 +19,11 @@ class CreateCache extends React.Component {
   }
 
   async createCache() {
-    const cacheId = await this.props.contract.create_cache({ name: this.state.cacheName });
+    const position = await (new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve, reject)));
+    console.log(position);
+    const latitude = position.coords.latitude.toString();
+    const longitude = position.coords.longitude.toString();
+    const cacheId = await this.props.contract.create_cache({ name: this.state.cacheName, latitude, longitude });
     // returns null on error
     const newCacheResults = cacheId ? [...this.state.createResults, cacheId] : [...this.state.createResults, false]
     this.setState({

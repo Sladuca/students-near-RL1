@@ -21,6 +21,9 @@ export default ({ submitTrade, updateGive, updateTake, updateMode, updateMsg, up
         </Modal.Header>
         <Modal.Body>
           <div className="flex flex-row pt-4">
+            <h5>{`(${cache.latitude}, ${cache.longitude})`}</h5>
+          </div>
+          <div className="flex flex-row py-4">
             <h3>Log</h3>
           </div>
           <div className="flex flex-row py-4">
