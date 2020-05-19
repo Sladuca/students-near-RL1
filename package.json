@@ -2,7 +2,7 @@
   "name": "rl1-hackathon",
   "version": "0.1.0",
   "scripts": {
-    "build": "npm run build:contract && npm run build:web",
+    "build": "npm run build:css && npm run build:contract && npm run build:web",
     "build:css": "postcss src/assets/tailwind.css -o src/assets/main.css",
     "build:contract": "node ./contract/build",
     "build:web": "parcel build src/index.html --public-url ./",
