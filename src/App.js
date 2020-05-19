@@ -89,12 +89,12 @@ class App extends Component {
     const redirectIfNotSignedIn = (child) => this.state.login ? child : <Redirect to="/"/>
     return (
       <Router>
+        <Row className="bg-green-500 shadow mb-8">
+          <Col>
+            <Navbar isSignedIn={this.state.login}/>
+          </Col>
+        </Row>
         <Container>
-          <Row className="bg-green-500 shadow mb-8">
-            <Col>
-              <Navbar isSignedIn={this.state.login}/>
-            </Col>
-          </Row>
           <Switch>
             <Route path="/geocache">
               { redirectIfNotSignedIn(<Geocache contract={this.props.contract} wallet={this.props.wallet} getGeodes={this.getGeodes} satchel={this.state.satchel}/>)}

@@ -1,10 +1,14 @@
+import img from '../assets/geode_other_logo.png';
+
+console.log(img)
+
 import React from 'react';
 import { Navbar, Row, Col } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 
 export default () => (
   <Navbar>
-    <Navbar.Brand href="/" className="text-gray-300">Geodes</Navbar.Brand>
+    <Navbar.Brand href="/" className="text-gray-300"><img className="h-10" src={`${window.origin}${img}`}/></Navbar.Brand>
     <Navbar.Toggle />
     <Navbar.Collapse className="justify-content-end">
       <Row>
