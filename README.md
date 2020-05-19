@@ -4,7 +4,7 @@ Geodes is a geocaching dapp that aims to make geocaching more social using Non-F
 
 ### Demo
 
-You can see a video demo of our app [here](https://drive.google.com/open?id=1tBIoSHm8O_V5N1x_sD2ghOMtJu4-dBAc) and a deployed version here. The demo follows the following steps:
+You can see a video demo of our app [here](https://drive.google.com/open?id=1tBIoSHm8O_V5N1x_sD2ghOMtJu4-dBAc) and a deployed version [here](https://geodes.now.sh/). The demo follows the following steps:
 
 1. Create a geocache using which gets asigned an ID, and the dapp would generate a QR code (not implemented here for the sake of MVP) containing that ID to place inside the geocache.
 2. A geocacher mints geodes
