@@ -31,7 +31,7 @@ export default ({ satchel, getGeodes, updateText, mintNew }) => {
           <tbody className="">
           { satchel.map((geode, i) => (
             <tr key={i}>
-              <td><img className="h-8" src={ `${window.origin}${geode.img}` }/></td>
+              <td><img className="h-8" src={ `${window.origin}/${geode.img}` }/></td>
               <td>{ geode.id }</td>
               <td>{ geode.holder }</td>
               <td>{ geode.creator }</td>
