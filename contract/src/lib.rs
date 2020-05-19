@@ -14,6 +14,8 @@ pub struct Geocache {
     log: Vec<LogEntry>,
     owner: String,
     name: String,
+    latitude: String,
+    longitude: String,
 }
 
 #[derive(Debug, PartialEq, PartialOrd, Eq, Hash, Serialize, Deserialize, BorshDeserialize, BorshSerialize, Clone)]
@@ -59,7 +61,7 @@ impl GeodesContract {
         }
     }    
 
-    pub fn create_cache(&mut self, name: String) -> Option<String> {
+    pub fn create_cache(&mut self, name: String, latitude: String, longitude: String) -> Option<String> {
         // cache_id = name.signer_account_id
         let mut cache_id = name.clone().to_owned();
         // replace spaces with dashes
@@ -81,6 +83,8 @@ impl GeodesContract {
             log: vec![],
             owner: env::signer_account_id().clone(),
             name: cache_name,
+            latitude: latitude.clone(),
+            longitude: longitude.clone(),
         });
         Some(cache_id.clone())
     }
@@ -442,7 +446,7 @@ mod tests {
         testing_env!(context);
         let mut contract = GeodesContract::default();
         // create cache
-        let cache_id = contract.create_cache("bob's super awesome geocache".to_string()).unwrap();
+        let cache_id = contract.create_cache("bob's super awesome geocache".to_string(), "0".to_string(), "0".to_string()).unwrap();
         // cache id is correct
         assert_eq!(cache_id, "bobs-super-awesome-geocache.bob".to_string());
         // cache was created
@@ -466,7 +470,7 @@ mod tests {
         testing_env!(context);
         let mut contract = GeodesContract::default();
         // bob makes cache
-        let cache_id = contract.create_cache("bob's super awesome geocache".to_string()).unwrap();
+        let cache_id = contract.create_cache("bob's super awesome geocache".to_string(), "0".to_string(), "0".to_string()).unwrap();
         // carol signs cache log
         let context_carol = get_context_carol(vec![], false);
         testing_env!(context_carol);
@@ -495,7 +499,7 @@ mod tests {
         testing_env!(context);
         let mut contract = GeodesContract::default();
         // bob makes cache
-        let cache_id = contract.create_cache("bob's super awesome geocache".to_string()).unwrap();
+        let cache_id = contract.create_cache("bob's super awesome geocache".to_string(), "0".to_string(), "0".to_string()).unwrap();
         // carol makes a geode
         let context_carol = get_context_carol(vec![], false);
         testing_env!(context_carol);
@@ -522,7 +526,7 @@ mod tests {
         testing_env!(context);
         let mut contract = GeodesContract::default();
         // bob makes cache
-        let cache_id = contract.create_cache("bob's super awesome geocache".to_string()).unwrap();
+        let cache_id = contract.create_cache("bob's super awesome geocache".to_string(), "0".to_string(), "0".to_string()).unwrap();
         // bob makes a geode and puts it in the cache
         let cache_geode = contract.mint_new("This is Bobs's cool rock".to_string(), "geode_0.png".to_string()).unwrap();
         assert!(contract.add_geode_to_cache(cache_id.clone(), cache_geode.clone()), "geode_0.png".to_string());
