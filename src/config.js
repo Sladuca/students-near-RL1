@@ -1,4 +1,4 @@
-const CONTRACT_NAME = process.env.CONTRACT_NAME ||'geodes';
+const CONTRACT_NAME = process.env.CONTRACT_NAME ||'geodes0.sladuca.testnet';
 
 function getConfig(env) {
     switch (env) {

@@ -4,10 +4,9 @@ import React, { Component } from 'react';
 import Geocache from './components/geocache';
 import Satchel from './components/satchel';
 import Navbar from './components/navbar';
-import SignIn from './components/signin';
 import Home from './components/home';
 import CreateCache from './components/createCache';
-import { Container, Row, Col } from 'react-bootstrap';
+import { Container, Row, Col, Button } from 'react-bootstrap';
 import {
   BrowserRouter as Router,
   Switch,
@@ -22,14 +21,12 @@ class App extends Component {
       login: false,
       satchel: [],
     }
-    this.funcs = {
-      signedInFlow: this.signedInFlow.bind(this),
-      requestSignIn: this.requestSignIn.bind(this),
-      requestSignOut: this.requestSignOut.bind(this),
-      signedOutFlow: this.signedOutFlow.bind(this),
-      getGeodes: this.getGeodes.bind(this)
+    this.signedInFlow = this.signedInFlow.bind(this);
+    this.requestSignIn = this.requestSignIn.bind(this);
+    this.requestSignOut = this.requestSignOut.bind(this);
+    this.signedOutFlow = this.signedOutFlow.bind(this);
+    this.getGeodes = this.getGeodes.bind(this);
     }
-  }
 
   componentDidMount() {
     let loggedIn = this.props.wallet.isSignedIn();
@@ -100,18 +97,30 @@ class App extends Component {
           </Row>
           <Switch>
             <Route path="/geocache">
-              { redirectIfNotSignedIn(<Geocache contract={this.props.contract} wallet={this.props.wallet} getGeodes={this.funcs.getGeodes} satchel={this.state.satchel}/>)}
+              { redirectIfNotSignedIn(<Geocache contract={this.props.contract} wallet={this.props.wallet} getGeodes={this.getGeodes} satchel={this.state.satchel}/>)}
             </Route>
             <Route path="/satchel">
-              { redirectIfNotSignedIn(<Satchel contract={this.props.contract} wallet={this.props.wallet} getGeodes={this.funcs.getGeodes} satchel={this.state.satchel}/>) }
+              { redirectIfNotSignedIn(<Satchel contract={this.props.contract} wallet={this.props.wallet} getGeodes={this.getGeodes} satchel={this.state.satchel}/>) }
             </Route>
             <Route path="/create_geocache">
               { redirectIfNotSignedIn(<CreateCache contract={this.props.contract} wallet={this.props.wallet}/>) }
             </Route>
             <Route path="/">
-              <Home isSignedIn={this.state.login} requestSignIn={this.funcs.requestSignIn}/>
+              <Home isSignedIn={this.state.login} requestSignIn={this.requestSignIn}/>
             </Route>
           </Switch>
+          {
+            this.state.login ? (
+              <div className="flex flex-row justify-center my-8">
+                <Button onMouseUp={() => this.requestSignOut()}>Sign Out</Button>
+              </div>
+            ) : (
+              <div className="flex flex-row justify-center my-8">
+                <Button onMouseUp={async () => await this.requestSignIn()}>Sign In</Button>
+              </div>
+            )
+          }
+          
         </Container>
       </Router>
     );

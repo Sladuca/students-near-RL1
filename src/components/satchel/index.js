@@ -1,3 +1,5 @@
+import images from '../../assets/*.png';
+
 import React from 'react';
 import Presenter from './presenter';
 
@@ -24,7 +26,11 @@ class Satchel extends React.Component {
       console.log('must be <= 280 characters!');
       return;
     }
-    await this.props.contract.mint_new({ bio: bio });
+    // select random geode img
+    const imgNum = Math.floor(Math.random() * Math.floor(12)) + 1;
+    const img = images[`geode_${imgNum}`];
+    console.log(imgNum, typeof img);
+    await this.props.contract.mint_new({ bio, img });
     await this.props.getGeodes();
   }
 

@@ -1,5 +1,4 @@
 import React from 'react';
-import Signin from '../signin';
 import { Row, Col } from 'react-bootstrap';
 import { Redirect } from 'react-router-dom';
 
@@ -13,9 +12,6 @@ export default ({ isSignedIn, requestSignIn,  }) => {
           </div>
           <div className="flex flex-row justify-center my-10">
             <h1>[graphic]</h1>
-          </div>
-          <div className="flex flex-row justify-center my-8">
-            <Signin requestSignIn={requestSignIn}/>
           </div>
         </div>
       </Col>
