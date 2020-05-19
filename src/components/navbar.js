@@ -11,11 +11,17 @@ export default () => (
     <Navbar.Brand href="/" className="text-gray-300"><img className="h-10" src={`${window.origin}${img}`}/></Navbar.Brand>
     <Navbar.Toggle />
     <Navbar.Collapse className="justify-content-end">
-      <Row>
-        <Col><Navbar.Text><Link to="/geocache" style={{ textDecoration: 'none' }}><div className="text-gray-gray-500 hover:text-gray-100 hover:text-opacity-75 transition duration-200 ease-in-out">Geocache</div></Link></Navbar.Text></Col>
-        <Col><Navbar.Text><Link to="/satchel" style={{ textDecoration: 'none' }}><div className="text-gray-gray-500 hover:text-gray-100 hover:text-opacity-75 transition duration-200 ease-in-out">Satchel</div></Link></Navbar.Text></Col>
-        <Col><Navbar.Text><Link to="/create_geocache" style={{ textDecoration: 'none' }}><div className="text-gray-gray-500 hover:text-gray-100 hover:text-opacity-75 transition duration-200 ease-in-out">Create</div></Link></Navbar.Text></Col>
-      </Row>
+      <div className="flex flex-row justify-end">
+        <div className="flex flex-col px-2">
+          <Navbar.Text><Link to="/geocache" style={{ textDecoration: 'none' }}><div className="text-gray-100 hover:text-gray-300 transition duration-200 ease-in-out">Geocache</div></Link></Navbar.Text>
+        </div>
+        <div className="flex flex-col px-2">
+          <Navbar.Text><Link to="/satchel" style={{ textDecoration: 'none' }}><div className="text-gray-100 hover:text-gray-300 transition duration-200 ease-in-out">Satchel</div></Link></Navbar.Text>
+        </div>
+        <div className="flex flex-col px-2">
+          <Navbar.Text><Link to="/create_geocache" style={{ textDecoration: 'none' }}><div className="text-gray-100 hover:text-gray-300 transition duration-200 ease-in-out">Create Geocache</div></Link></Navbar.Text>
+        </div>
+      </div>
     </Navbar.Collapse>
   </Navbar>
 );
