@@ -30,7 +30,7 @@
     "parcel-bundler": "^1.12.4",
     "postcss-cli": "^7.1.1",
     "react-test-renderer": "^16.13.1",
-    "shelljs": "^0.8.4"
+    "shelljs": "^0.8.5"
   },
   "dependencies": {
     "@babel/core": "^7.9.6",
